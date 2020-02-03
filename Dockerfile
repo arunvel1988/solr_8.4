@@ -3,15 +3,6 @@ FROM ubuntu
 LABEL maintainer="admin"
 LABEL repository="https://github.com/arunvel1988/"
 
-ARG SOLR_VERSION="8.4.1"
-ARG SOLR_SHA512="2f210dae8d6a07b111ede22005fbd16aa6848900cda8adb352a33e08229783a170dddb529a7eb990f5157d4f5427c199df2114b9c0ffecdf9490a2ac07c6bb09"
-ARG SOLR_KEYS="2085660D9C1FCCACC4A479A3BF160FF14992A24C"
-# If specified, this will override SOLR_DOWNLOAD_SERVER and all ASF mirrors. Typically used downstream for custom builds
-ARG SOLR_DOWNLOAD_URL
-
-# Override the solr download location with e.g.:
-#   docker build -t mine --build-arg SOLR_DOWNLOAD_SERVER=http://www-eu.apache.org/dist/lucene/solr .
-ARG SOLR_DOWNLOAD_SERVER
 
 RUN apt update -y && apt install wget -y && apt install openjdk-11-jdk -y 
 RUN set -ex; \
@@ -46,23 +37,7 @@ RUN set -ex; \
 RUN set -ex; \
   export GNUPGHOME="/tmp/gnupg_home"; \ 
   mkdir -p "$GNUPGHOME"; \
-  chmod 700 "$GNUPGHOME"; \
-  echo "disable-ipv6" >> "$GNUPGHOME/dirmngr.conf"; \
-  for key in $SOLR_KEYS $GOSU_KEY $TINI_KEY; do \
-    found=''; \
-    for server in \
-      ha.pool.sks-keyservers.net \
-      hkp://keyserver.ubuntu.com:80 \
-      hkp://p80.pool.sks-keyservers.net:80 \
-      pgp.mit.edu \
-    ; do \
-      echo "  trying $server for $key"; \
-      gpg --batch --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$key" && found=yes && break; \
-      gpg --batch --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$key" && found=yes && break; \
-    done; \
-    test -z "$found" && echo >&2 "error: failed to fetch $key from several disparate servers -- network issues?" && exit 1; \
-  done; \
-  exit 0
+  chmod 700 "$GNUPGHOME";
 
 RUN set -ex; \
   export GNUPGHOME="/tmp/gnupg_home"; \
